@@ -1,0 +1,269 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Clientes</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Cliente" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Cliente" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedCustomers()"
+                            [disabled]="!selectedCustomer || !selectedCustomer.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="customers" responsiveLayout="scroll" [rows]="10"
+            [globalFilterFields]="['name_customer', 'surname_customer', 'citizenship_card', 'cellphone_customer','address','city','email_customer']"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedCustomer" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Clientes</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Foto</th>
+                        <th>Número de documento</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-customer>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="customer"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{customer.name_customer}}
+                        </td>
+                        <td>
+                            {{customer.surname_customer}}
+                        </td>
+                        <td>
+                            <img *ngIf="customer.photo_customer" [src]="customer.photo_customer"
+                                alt="{{customer.photo_customer}}" style="width: 100px; height: auto;">
+                        </td>
+                        <td>
+                            {{customer.citizenship_card}}
+                        </td>
+                        <td>
+                            {{customer.cellphone_customer}}
+                        </td>
+                        <td>
+                            {{customer.address}}
+                        </td>
+
+
+                        <td>
+                            {{customer.email_customer}}
+                        </td>
+
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editCustomer(customer)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteCustomer(customer)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" style="margin-left: auto;"
+                                    pTooltip="Pacientes" tooltipPosition="right" [routerLink]="['/uikit/patients']">
+                                    <i class="pi pi-angle-right" style="margin-left: 0.5rem;"></i>
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="customersDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Cliente' : 'Crear Cliente'" [modal]="true" class="p-fluid"
+                (onHide)="resetDialog()">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formcustomer">
+
+                        <!-- Nombres -->
+                        <div class="field">
+                            <label for="name">Nombres</label>
+                            <input type="text" pInputText id="name" formControlName="name_customer" required
+                                autofocus />
+                            <div
+                                *ngIf="formcustomer.get('name_customer')?.invalid && formcustomer.get('name_customer')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('name_customer')?.hasError('required')">El nombre del
+                                    cliente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formcustomer.get('name_customer')?.hasError('pattern')">El
+                                    nombre del cliente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <!-- Apellidos -->
+                        <div class="field">
+                            <label for="surname">Apellidos</label>
+                            <input type="text" pInputText id="surname" formControlName="surname_customer" required
+                                autofocus />
+                            <div
+                                *ngIf="formcustomer.get('surname_customer')?.invalid && formcustomer.get('surname_customer')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('surname_customer')?.hasError('required')">Los apellidos son
+                                    obligatorios.</small>
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('surname_customer')?.hasError('pattern')">Los apellidos solo
+                                    pueden contener letras.</small>
+                            </div>
+                        </div>
+
+                        <!-- Número de Documento -->
+                        <div class="field">
+                            <label for="citizenship_card">Número de documento</label>
+                            <input type="text" pInputText id="citizenship_card" formControlName="citizenship_card"
+                                required />
+                            <div
+                                *ngIf="formcustomer.get('citizenship_card')?.invalid && formcustomer.get('citizenship_card')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('citizenship_card')?.hasError('required')">El número de
+                                    documento es obligatorio.</small>
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('citizenship_card')?.hasError('pattern')">El número de
+                                    documento debe contener entre 8 y 10 dígitos.</small>
+                            </div>
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="field">
+                            <label for="cellphone_customer">Teléfono</label>
+                            <input type="text" pInputText id="cellphone_customer" formControlName="cellphone_customer"
+                                required />
+                            <div
+                                *ngIf="formcustomer.get('cellphone_customer')?.invalid && formcustomer.get('cellphone_customer')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('cellphone_customer')?.hasError('required')">El teléfono es
+                                    obligatorio.</small>
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('cellphone_customer')?.hasError('pattern')">El teléfono debe
+                                    contener 10 dígitos numéricos.</small>
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="field">
+                            <label for="address">Dirección</label>
+                            <input type="text" pInputText id="address" formControlName="address" required />
+                            <div *ngIf="formcustomer.get('address')?.invalid && formcustomer.get('address')?.touched">
+                                <small class="p-error" *ngIf="formcustomer.get('address')?.hasError('required')">La
+                                    dirección es obligatoria.</small>
+                                <small class="p-error" *ngIf="formcustomer.get('address')?.hasError('pattern')">La
+                                    dirección solo puede contener caracteres alfanuméricos, espacios, y algunos
+                                    símbolos.</small>
+                            </div>
+                        </div>
+
+                        <!-- Ciudad -->
+                        <div class="field">
+                            <label for="city">Ciudad</label>
+                            <input type="text" pInputText id="city" formControlName="city" required />
+                            <div *ngIf="formcustomer.get('city')?.invalid && formcustomer.get('city')?.touched">
+                                <small class="p-error" *ngIf="formcustomer.get('city')?.hasError('required')">La ciudad
+                                    es obligatoria.</small>
+                                <small class="p-error" *ngIf="formcustomer.get('city')?.hasError('pattern')">La ciudad
+                                    solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <!-- Correo Electrónico -->
+                        <div class="field">
+                            <label for="email_customer">Correo Electrónico</label>
+                            <input type="text" pInputText id="email_customer" formControlName="email_customer"
+                                required />
+                            <div
+                                *ngIf="formcustomer.get('email_customer')?.invalid && formcustomer.get('email_customer')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formcustomer.get('email_customer')?.hasError('required')">El correo
+                                    electrónico es obligatorio.</small>
+                                <small class="p-error" *ngIf="formcustomer.get('email_customer')?.hasError('email')">El
+                                    correo electrónico no es válido.</small>
+                            </div>
+                        </div>
+
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveCustomer()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteCustomersDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span *ngIf="customer">¿Estás seguro de que quieres eliminar
+                        <b>{{customer.name_customer}}</b>?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteCustomersDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteCustomerDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los clientes seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteCustomerDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+        </div>
+    </div>
+</div>

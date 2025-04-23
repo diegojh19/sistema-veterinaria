@@ -1,0 +1,100 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Registrarse</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Registro" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-dialog [(visible)]="registerDialog" [style]="{width: '450px'}"
+                [header]="'Crear Registro'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <!-- Asegurar que el formulario tenga la referencia al FormGroup -->
+                    <form [formGroup]="formregister">
+                        <div class="field">
+                            <label for="name">Usuario</label>
+                            <input type="text" pInputText id="name" formControlName="username" required autofocus />
+                            <div *ngIf="formregister.get('username')?.invalid && formregister.get('username')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('username')?.hasError('required')">El nombre es obligatorio.</small>
+                                <small class="p-error" *ngIf="formregister.get('username')?.hasError('pattern')">El nombre solo puede contener letras.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Nombre</label>
+                            <input type="text" pInputText id="name" formControlName="firstName" required autofocus />
+                            <div *ngIf="formregister.get('firstName')?.invalid && formregister.get('firstName')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('firstName')?.hasError('required')">El nombre es obligatorio.</small>
+                                <small class="p-error" *ngIf="formregister.get('firstName')?.hasError('pattern')">El nombre solo puede contener letras.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Apellido</label>
+                            <input type="text" pInputText id="name" formControlName="lastName" required autofocus />
+                            <div *ngIf="formregister.get('lastName')?.invalid && formregister.get('lastName')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('lastName')?.hasError('required')">El apellido es obligatorio.</small>
+                                <small class="p-error" *ngIf="formregister.get('lastName')?.hasError('pattern')">El apellido solo puede contener letras.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Email</label>
+                            <input type="email" pInputText id="name" formControlName="email" required autofocus />
+                            <div *ngIf="formregister.get('email')?.invalid && formregister.get('email')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('email')?.hasError('required')">El correo electrónico es obligatorio.</small>
+                                <small class="p-error" *ngIf="formregister.get('email')?.hasError('pattern')">El correo electrónico no es válido.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Dirección</label>
+                            <input type="text" pInputText id="name" formControlName="address" required autofocus />
+                            <div *ngIf="formregister.get('address')?.invalid && formregister.get('address')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('address')?.hasError('required')">La dirección es obligatoria.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Telefono</label>
+                            <input type="text" pInputText id="name" formControlName="cellphone" required autofocus />
+                            <div *ngIf="formregister.get('cellphone')?.invalid && formregister.get('cellphone')?.touched">
+                                <small class="p-error" *ngIf="formregister.get('cellphone')?.hasError('required')">El teléfono es obligatorio.</small>
+                                <small class="p-error" *ngIf="formregister.get('cellphone')?.hasError('pattern')">El número de teléfono debe tener 10 dígitos.</small>
+                              </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Contraseña</label>
+                            <input type="text" pInputText id="name" formControlName="password" required autofocus />
+                            <div *ngIf="formregister.get('password')?.invalid && formregister.get('password')?.touched">
+                                <small class="p-error">{{ passwordErrors }}</small>
+                              </div>
+                        </div>
+
+
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveRegister()" [disabled]="isProcessing"></button>
+                </ng-template>
+            </p-dialog>
+
+            
+
+
+        </div>
+    </div>
+</div>

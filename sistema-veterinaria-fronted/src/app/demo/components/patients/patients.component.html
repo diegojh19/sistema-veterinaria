@@ -1,0 +1,322 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Pacientes</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Paciente" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Paciente" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedPatients()"
+                            [disabled]="!selectedPatient || !selectedPatient.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="patients" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['name_patients','photo_patients','birthdate','age','sex','color','fur','allergy','breeds_idbreeds','customer_name',]"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedPatient" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Pacientes</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+                        <th>Nombres</th>
+                        <th>Foto</th>
+                        <th>Especie</th>
+                        <th>Raza</th>
+                        <th>Fecha Nacimiento</th>
+                        <th>Edad</th>
+                        <th>Sexo</th>
+                        <th>Color</th>
+                        <th>Pelaje</th>
+                        <th>Alergia</th>
+
+                        <th>Cliente</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-patient>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="patient"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{patient.name_patients}}
+                        </td>
+
+                        <td>
+                            <img *ngIf="patient.photo_patients" [src]="patient.photo_patients"
+                                alt="{{patient.photo_patients}}" style="width: 100px; height: auto;">
+                        </td>
+
+                        <td>
+                            {{ getSpeciesByBreed(patient.breeds_idbreeds) }} <!-- Mostrar la especie -->
+                        </td>
+
+                        <td>
+                            {{ getBreedName(patient.breeds_idbreeds) }}
+
+                        </td>
+
+                        <td>
+                            {{patient.birthdate}}
+                        </td>
+
+                        <td>
+                            {{patient.age}}
+                        </td>
+                        <td>
+                            {{patient.sex}}
+                        </td>
+                        <td>
+                            {{patient.color}}
+                        </td>
+                        <td>
+                            {{patient.fur}}
+                        </td>
+                        <td>
+                            {{patient.allergy}}
+                        </td>
+
+                        <td>
+                            {{ getCustomerName(patient.customer_idcustomer) }}
+
+                        </td>
+
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editPatients(patient)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deletePatients(patient)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" style="margin-left: auto;"
+                                    pTooltip="Consultas" tooltipPosition="right" [routerLink]="['/uikit/queries']">
+                                    <i class="pi pi-angle-right" style="margin-left: 0.5rem;"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" style="margin-left: auto;"
+                                    pTooltip="Recetas" tooltipPosition="right" [routerLink]="['/uikit/recipes']">
+                                    <i class="pi pi-file" style="margin-left: 0.5rem;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <p-dialog [(visible)]="patientsDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Paciente' : 'Crear Paciente'" [modal]="true" class="p-fluid"
+                (onHide)="resetDialog()">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formspatient">
+
+                        <div class="field">
+                            <label for="name">Nombres</label>
+                            <input type="text" pInputText id="name" formControlName="name_patients" required
+                                autofocus />
+                            <div
+                                *ngIf="formspatient.get('name_patients')?.invalid && formspatient.get('name_patients')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formspatient.get('name_patients')?.hasError('required')">El nombre del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('name_patients')?.hasError('pattern')">El
+                                    nombre del paciente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Foto</label>
+                            <input type="file" pInputText id="name" formControlName="photo_patients"
+                                (change)="onFileSelect($event)" accept="image/*" />
+                            <p *ngIf="imageTypeError">Solo se permiten imágenes (jpg, jpeg, png, gif, etc.).</p>
+                            <p *ngIf="imageSizeError">La imagen es demasiado grande. El tamaño máximo permitido es de 5
+                                MB.</p>
+                            <!-- Aquí se muestra la vista previa de la imagen seleccionada o actual -->
+                            <div *ngIf="patient.photo_patients || selectFile" class="mt-3">
+                                <img [src]="selectFile ? imagePreview : patient.photo_patients"
+                                    alt="Vista previa de la imagen" class="img-thumbnail" width="300">
+                            </div>
+
+                            <!-- Botón para quitar la imagen -->
+                            <button *ngIf="imagePreview || patient.photo_patients" pButton pRipple label="Quitar Imagen"
+                                icon="pi pi-times" class="p-button-danger mt-2" (click)="removeImage()">
+                            </button>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Fecha Nacimiento</label>
+                            <input type="date" pInputText id="name" formControlName="birthdate" required autofocus />
+                            <div
+                                *ngIf="formspatient.get('birthdate')?.invalid && formspatient.get('birthdate')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('birthdate')?.hasError('required')">La
+                                    fecha de nacimiento del
+                                    paciente es obligatorio.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Edad</label>
+                            <input type="text" pInputText id="name" formControlName="age" required autofocus />
+                            <div *ngIf="formspatient.get('age')?.invalid && formspatient.get('age')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('age')?.hasError('required')">La edad del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('age')?.hasError('pattern')">La edad del
+                                    paciente solo puede contener numeros.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Sexo</label>
+                            <input type="text" pInputText id="name" formControlName="sex" required autofocus />
+
+                            <div *ngIf="formspatient.get('sex')?.invalid && formspatient.get('sex')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('sex')?.hasError('required')">El sexo del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('sex')?.hasError('pattern')">El sexo del
+                                    paciente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Color</label>
+                            <input type="text" pInputText id="name" formControlName="color" required autofocus />
+
+                            <div *ngIf="formspatient.get('color')?.invalid && formspatient.get('color')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('color')?.hasError('required')">El color
+                                    del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('color')?.hasError('pattern')">El color
+                                    del paciente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Pelaje</label>
+                            <input type="text" pInputText id="name" formControlName="fur" required autofocus />
+
+                            <div *ngIf="formspatient.get('fur')?.invalid && formspatient.get('fur')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('fur')?.hasError('required')">El pelaje
+                                    del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('fur')?.hasError('pattern')">El pelaje
+                                    del paciente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Alergia</label>
+                            <input type="text" pInputText id="name" formControlName="allergy" required autofocus />
+                            <div *ngIf="formspatient.get('allergy')?.invalid && formspatient.get('allergy')?.touched">
+                                <small class="p-error" *ngIf="formspatient.get('allergy')?.hasError('required')">La
+                                    alergia del
+                                    paciente es obligatorio.</small>
+                                <small class="p-error" *ngIf="formspatient.get('allergy')?.hasError('pattern')">La
+                                    alergia del paciente solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+
+
+                        <div class="field">
+                            <label for="breed">Raza</label>
+                            <p-dropdown formControlName="breeds_idbreeds" [options]="breed" optionLabel="name_breeds"
+                                optionValue="id" appendTo="body" placeholder="Seleccione Raza">
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formspatient.get('breeds_idbreeds')?.value">
+                                Debe seleccionar una raza.
+                            </small>
+
+                        </div>
+
+                        <div class="field">
+                            <label for="customer">Cliente</label>
+                            <p-dropdown 
+                                formControlName="customer_idcustomer" 
+                                [options]="customer"
+                                optionLabel="name_customer" 
+                                optionValue="id" 
+                                appendTo="body"
+                                placeholder="Seleccione Cliente">
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formspatient.get('customer_idcustomer')?.value">
+                                Debe seleccionar una cliente.
+                            </small>
+
+                        </div>
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="savePatients()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deletePatientsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span *ngIf="patient">¿Estás seguro de que quieres eliminar <b>{{patient.name_patients}}</b>?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deletePatientsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deletePatientDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los pacientes seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deletePatientDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+        </div>
+    </div>
+</div>

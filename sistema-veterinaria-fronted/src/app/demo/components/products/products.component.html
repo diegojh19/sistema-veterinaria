@@ -1,0 +1,269 @@
+
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Productos</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Producto" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Producto" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedProducts()"
+                            [disabled]="!selectedProducts || !selectedProducts.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-dialog [(visible)]="productsDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Producto' : 'Crear Producto'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <!-- Asegurar que el formulario tenga la referencia al FormGroup -->
+                    <form [formGroup]="formsProducts" (ngSubmit)="saveProducts()">
+                        <div class="field">
+                            <label for="name">Nombre Producto</label>
+                            <input type="text" pInputText id="name" formControlName="name_products" required
+                                autofocus />
+                            <div
+                                *ngIf="formsProducts.get('name_products')?.invalid && formsProducts.get('name_products')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formsProducts.get('name_products')?.hasError('required')">El nombre del
+                                    producto es obligatorio.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Descripción</label>
+                            <textarea formControlName="description" rows="5" id="descripcion"
+                                placeholder="ingrese la descripcion del producto"></textarea>
+
+                            <div
+                                *ngIf="formsProducts.get('description')?.invalid && formsProducts.get('description')?.touched">
+                                <small class="p-error" *ngIf="formsProducts.get('description')?.hasError('required')">El
+                                    nombre del
+                                    producto es obligatorio.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="categoria">Categoria</label>
+                            <p-dropdown formControlName="categories_idcategories" [options]="categories"
+                                optionLabel="name_category" optionValue="id" appendTo="body"
+                                placeholder="Seleccione Categoria">
+                            </p-dropdown>
+                            <small class="p-error"
+                                *ngIf="submitted && !formsProducts.get('categories_idcategories')?.value">
+                                Debe seleccionar una categoria.
+                            </small>
+
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Marca</label>
+                            <input type="text" pInputText id="name" formControlName="brand" required autofocus />
+
+                            <div *ngIf="formsProducts.get('brand')?.invalid && formsProducts.get('brand')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsProducts.get('brand')?.hasError('required')">La marca
+                                    del
+                                    producto es obligatorio.</small>
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="field">
+                            <label for="name">Precio</label>
+                            <input type="text" pInputText id="name" formControlName="price" required autofocus />
+                            <div *ngIf="formsProducts.get('price')?.invalid && formsProducts.get('price')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsProducts.get('price')?.hasError('required')">El
+                                    precio del producto es obligatorio.</small>
+                                <small class="p-error" *ngIf="formsProducts.get('price')?.hasError('pattern')">El precio
+                                    del producto solo puede contener numeros.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Cantidad Disponible</label>
+                            <input type="text" pInputText id="name" formControlName="stock" required autofocus />
+                            <div *ngIf="formsProducts.get('stock')?.invalid && formsProducts.get('stock')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsProducts.get('stock')?.hasError('required')">El
+                                    stock del producto es obligatorio.</small>
+                                <small class="p-error" *ngIf="formsProducts.get('stock')?.hasError('pattern')">El stock
+                                    del producto solo puede contener numeros.</small>
+                            </div>
+                        </div>
+
+
+
+                        <div class="field">
+                            <label for="name">Fecha de Vencimiento</label>
+                            <input type="date" pInputText id="name" formControlName="expiration_Date" required
+                                autofocus />
+                            <div
+                                *ngIf="formsProducts.get('expiration_Date')?.invalid && formsProducts.get('expiration_Date')?.touched || submitted">
+                                <small class="p-error"
+                                    *ngIf="formsProducts.get('expiration_Date')?.hasError('required')">La
+                                    fecha de vencimiento del producto es obligatorio.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Dosis</label>
+                            <input type="text" pInputText id="name" formControlName="dose" required autofocus />
+                            <div *ngIf="formsProducts.get('dose')?.invalid && formsProducts.get('dose')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsProducts.get('dose')?.hasError('required')">La dosis
+                                    del
+                                    producto es obligatorio.</small>
+                            </div>
+                        </div>
+
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveProducts()" [disabled]="isProcessing"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-table #dt [value]="product" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name_species']"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Productos</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+                        <th>Nombre Producto</th>
+                        <th>Descripción</th>
+                        <th>Categoria</th>
+                        <th>Marca</th>
+                        <th>Precio</th>
+                        <th>Cantidad Disponible</th>
+                        <th>Fecha de Vencimiento</th>
+                        <th>Dosis</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-products>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="products"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{products.name_products}}
+                        </td>
+
+                        <td>
+                            {{products.description}}
+                        </td>
+
+                        <td>
+                            {{ getCustomerName(products.categories_idcategories) }}
+
+                        </td>
+
+                        <td>
+                            {{products.brand}}
+                        </td>
+
+                        <td>
+                            {{products.price}}
+                        </td>
+
+                        <td>
+                            {{products.stock}}
+                        </td>
+
+
+                        <td>
+                            {{products.expiration_Date}}
+                        </td>
+
+                        <td>
+                            {{products.dose}}
+                        </td>
+
+
+
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editProduct(products)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteProducts(products)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+
+            <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteProductsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+            
+
+            <p-dialog [(visible)]="deleteProductDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los productos seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteProductDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+
+
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+<div class="verification-wrapper">
+  <div class="verification-card">
+    <img src="assets/img/verified.svg" alt="Verificado" class="icon" *ngIf="success">
+    <img src="assets/img/error.svg" alt="Error" class="icon" *ngIf="!success">
+
+    <h2 class="message-title">{{ message }}</h2>
+
+    <a [routerLink]="['/auth/login']" class="btn-login">Ir a Iniciar Sesión</a>
+  </div>
+</div>

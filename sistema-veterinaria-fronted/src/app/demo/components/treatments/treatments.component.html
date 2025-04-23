@@ -1,0 +1,163 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Tratamientos</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Tratamientos" icon="pi pi-plus"
+                            class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Tratamientos" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedTreatment()"
+                            [disabled]="!selectedTreatments || !selectedTreatments.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="treatments" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['detail_treatments']"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedTreatments"
+                selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Tratamientos</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th>Id</th>
+                        <th>Detalle Tratamiento</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-treatment>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="treatment"></p-tableCheckbox>
+                        </td>
+                        <td>
+                            {{treatment.id}}
+                        </td>
+                        <td>
+                            {{treatment.detail_treatments}}
+                        </td>
+                        <td>
+                            <div class="flex">
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editTreatment(treatment)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteTreatments(treatment)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="treatmentDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Tratamientos' : 'Crear Tratamientos'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formstreatments">
+                        <div class="field">
+                            <label for="name">Detalle tratamiento</label>
+                            <input type="text" pInputText id="name" formControlName="detail_treatments" required
+                                autofocus />
+                                 
+                            <div
+                                *ngIf="formstreatments.get('detail_treatments')?.invalid && formstreatments.get('detail_treatments')?.touched">
+                                <small class="p-error"
+                                    *ngIf="formstreatments.get('detail_treatments')?.hasError('required')">El detalle del tratamiento es obligatorio.</small>
+                                <small class="p-error"
+                                    *ngIf="formstreatments.get('detail_treatments')?.hasError('pattern')">El detalle del tratamiento solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="diagnosis">Diagnostico</label>
+                            <p-dropdown 
+                                formControlName="diagnosis_iddianosis" 
+                                [options]="diagnosis" 
+                                optionLabel="detail_diagnosis" 
+                                optionValue="id" 
+                                appendTo="body"
+                                placeholder="Seleccione Diagnostico">
+
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formstreatments.get('diagnosis_iddianosis')?.value">
+                                Debe seleccionar un Diagnostico
+                              </small>
+                        </div>
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveTreatments()"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-dialog [(visible)]="deleTreatmenstDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center jdeleTreatmenstDialogustify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span *ngIf="treatment">¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleTreatmenstDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-dialog [(visible)]="deleTreatmentDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los tratamientos seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleTreatmentDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+
+
+        </div>
+    </div>
+</div>

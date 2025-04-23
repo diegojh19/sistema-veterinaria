@@ -1,0 +1,176 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Diagnóstico</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Diagnóstico" icon="pi pi-plus"
+                            class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Diagnóstico" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedDiagnosis()"
+                            [disabled]="!selectedDiagnosis || !selectedDiagnosis.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="diagnosis" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['detail_diagnosis','date_diagnosis','queries_idqueries']"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedDiagnosis" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Diagnóstico</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th>Id</th>
+                        <th>Diagnóstico Detallado</th>
+                        <th>Fecha Diagnóstico</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-Diagnosi>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="Diagnosi"></p-tableCheckbox>
+                        </td>
+                        <td>
+                            {{Diagnosi.id}}
+                        </td>
+                        <td>
+                            {{Diagnosi.detail_diagnosis}}
+                        </td>
+                        <td>
+                            {{Diagnosi.date_diagnosis}}
+                        </td>
+
+                        <td>
+                            <div class="flex">
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editDiagnosis(Diagnosi)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteDiagnosis(Diagnosi)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="diagnosisDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Diagnóstico' : 'Crear Diagnóstico'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formsdiagnosis">
+                        <div class="field">
+                            <label for="name">Diagnóstico Detallado</label>
+                            <textarea formControlName="detail_diagnosis" rows="5" id="descripcion"
+                                placeholder="ingrese la descripcion del producto"></textarea>
+                            <div
+                                *ngIf="formsdiagnosis.get('detail_diagnosis')?.invalid && formsdiagnosis.get('detail_diagnosis')?.touched || submitted">
+                                <small class="p-error"
+                                    *ngIf="formsdiagnosis.get('detail_diagnosis')?.hasError('required')">El diagnóstico
+                                    detallado es obligatorio.</small>
+                                <small class="p-error"
+                                    *ngIf="formsdiagnosis.get('detail_diagnosis')?.hasError('pattern')">El diagnóstico
+                                    detallado solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Fecha Diagnóstico</label>
+                            <input type="date" pInputText id="name" formControlName="date_diagnosis" required
+                                autofocus />
+                            <div
+                                *ngIf="formsdiagnosis.get('date_diagnosis')?.invalid && formsdiagnosis.get('date_diagnosis')?.touched || submitted">
+                                <small class="p-error"
+                                    *ngIf="formsdiagnosis.get('date_diagnosis')?.hasError('required')">La Fecha del
+                                    diagnóstico es obligatorio.</small>
+                            </div>
+                        </div>
+
+
+
+                        <div class="field">
+                            <label for="query">Consulta</label>
+                            <p-dropdown formControlName="queries_idqueries" [options]="Queries" optionLabel="reason"
+                                optionValue="id" appendTo="body" placeholder="Seleccione una consulta">
+                            </p-dropdown>
+                            <small class="p-error"
+                                *ngIf="submitted && formsdiagnosis.controls['queries_idqueries'].invalid">
+                                La consulta es requerida.
+                            </small>
+
+                        </div>
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text"
+                        (click)="saveDiagnosis()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteDiagnosisDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteDiagnosisDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteDiagnosiDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los diagnosticos seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteDiagnosiDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+
+        </div>
+    </div>
+</div>

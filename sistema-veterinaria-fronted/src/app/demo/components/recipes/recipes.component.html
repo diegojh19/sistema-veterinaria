@@ -1,0 +1,207 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Recetas</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Receta" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Receta" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedRecipes()"
+                            [disabled]="!selectedRecipes || !selectedRecipes.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="recipes" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['recipe_date','description','indications']" [paginator]="true"
+                [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedRecipes" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Recipes</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Indicaciones</th>
+                        <th>Paciente</th>
+                        <th>Acciones</th>
+
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-recipes>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="recipes"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{recipes.recipe_date}}
+                        </td>
+                        <td>
+                            {{recipes.description}}
+                        </td>
+                        <td>
+                            {{recipes.indications}}
+                        </td>
+                        <td>
+                            {{ getPatientsName(recipes.patients_idpatients) }}
+
+                        </td>
+
+
+                        <td>
+                            <div class="flex">
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editRecipe(recipes)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteRecipe(recipes)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+
+                                <!-- Botón de descarga PDF -->
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Descargar PDF"
+                                    tooltipPosition="right" (click)="downloadRecetaPdf(recipes.id)">
+                                    <i class="pi pi-download" style="margin-right: 0.1rem;"></i> Descargar PDF
+                                </button>
+
+
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="RecipeDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Receta': 'Crear Receta'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formsrecipes">
+
+                        <div class="field">
+                            <label for="recipe_date">Fecha Receta</label>
+                            <input type="date" pInputText id="recipe_date" formControlName="recipe_date" required
+                                autofocus />
+                            <div
+                                *ngIf="formsrecipes.get('recipe_date')?.invalid && formsrecipes.get('recipe_date')?.touched">
+                                <small class="p-error" *ngIf="formsrecipes.get('recipe_date')?.hasError('required')">La
+                                    fecha de la receta es obligatorio.</small>
+                            </div>
+                        </div>
+
+
+                        <div class="field">
+                            <label for="name">Descripción</label>
+                            <input type="text" pInputText id="name" formControlName="description" required autofocus />
+                            <div
+                                *ngIf="formsrecipes.get('description')?.invalid && formsrecipes.get('description')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsrecipes.get('description')?.hasError('required')">La
+                                    descripción de la receta es obligatorio.</small>
+                                <small class="p-error" *ngIf="formsrecipes.get('description')?.hasError('pattern')">La
+                                    descripción de la receta solo puede contener letras.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Indicaciones</label>
+                            <input type="text" pInputText id="name" formControlName="indications" required autofocus />
+
+                            <div
+                                *ngIf="formsrecipes.get('indications')?.invalid && formsrecipes.get('indications')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsrecipes.get('indications')?.hasError('required')">La
+                                    indicación de la receta es obligatorio.</small>
+
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="patient">Paciente</label>
+                            <p-dropdown formControlName="patients_idpatients" [options]="patients"
+                                optionLabel="name_patients" optionValue="id" appendTo="body"
+                                placeholder="Seleccione Paciente">
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formsrecipes.get('patients_idpatients')?.value">
+                                Debe seleccionar un paciente.
+                            </small>
+
+
+
+                        </div>
+
+
+
+
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveRecipe()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteRecipesDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteRecipesDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-dialog [(visible)]="deleteRecipeDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar las recetas seleccionadas?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteRecipeDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+        </div>
+    </div>
+</div>

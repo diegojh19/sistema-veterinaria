@@ -1,0 +1,181 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Turnos</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Turno" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Turno" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedShifts()"
+                            [disabled]="!selectedShifts || !selectedShifts.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="shifts" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['start','end','title']"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedShifts" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Turnos</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th>Id</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                        <th>Titulo</th>
+                        <th>Cliente</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-shift>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="shift"></p-tableCheckbox>
+                        </td>
+                        <td>
+                            {{shift.id}}
+                        </td>
+                        <td>
+                            {{shift.start}}
+                        </td>
+                        <td>
+                            {{shift.end}}
+                        </td>
+                        <td>
+                            {{shift.title}}
+                        </td>
+                        <td>
+                            {{ getCustomerName(shift.customer_idcustomer) }}
+
+                        </td>
+                        <td>
+                            <div class="flex">
+    
+                                    <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editShifts(shift)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+                                    
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteShift(shift)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="shiftsDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Turno' : 'Crear Turno'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formsshifts">
+                        <div class="field">
+                            <label for="name">Inicio</label>
+                            <input type="date" pInputText id="name" formControlName="start" required autofocus />
+                            <div *ngIf="formsshifts.get('start')?.invalid && formsshifts.get('start')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsshifts.get('start')?.hasError('required')">La fecha inicio
+                                    del turno es obligatorio.</small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Fin</label>
+                            <input type="date" pInputText id="name" formControlName="end" required autofocus />
+                            <div *ngIf="formsshifts.get('end')?.invalid && formsshifts.get('end')?.touched || submitted">
+                                <small class="p-error" *ngIf="formsshifts.get('end')?.hasError('required')">La fecha fin
+                                    del turno es obligatorio.</small>
+                            </div>                        </div>
+
+                        <div class="field">
+                            <label for="name">Titulo</label>
+                            <input type="text" pInputText id="name" formControlName="title" required autofocus />
+                                
+                                <div *ngIf="formsshifts.get('title')?.invalid && formsshifts.get('title')?.touched || submitted">
+                                    <small class="p-error" *ngIf="formsshifts.get('title')?.hasError('required')">El titulo del turno
+                                        es obligatorio.</small>
+                                        <small class="p-error" *ngIf="formsshifts.get('title')?.hasError('pattern')">
+                                            El titulo solo puede contener letras.
+                                        </small>
+                                </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="breed">Cliente</label>
+                            <p-dropdown formControlName="customer_idcustomer" [options]="customer"
+                                optionLabel="name_customer" optionValue="id" appendTo="body"
+                                placeholder="Seleccione Cliente">
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formsshifts.get('customer_idcustomer')?.value">
+                                Debe seleccionar un cliente.
+                            </small>
+                        </div>
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveShifts()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteshiftsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteshiftsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+            
+            <p-dialog [(visible)]="deleteshiftDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los turnos seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteshiftDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+        </div>
+    </div>
+</div>

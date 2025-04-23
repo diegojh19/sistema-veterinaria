@@ -1,0 +1,238 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Consultas</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Consulta" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Consulta" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedQueries()"
+                            [disabled]="!selectedQueries || !selectedQueries.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="Queries" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="['consultation_date','reason','past','diseases','next_consultation','patients_idpatients'
+]"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedQueries" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Consultas</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+                        <th>Fecha de Consulta</th>
+                        <th>Razon</th>
+                        <th>Antecedentes</th>
+                        <th>Enfermedades</th>
+                        <th>Fecha siguiente consulta</th>
+                        <th>Paciente</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-Querie>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="Querie"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{Querie.consultation_date}}
+                        </td>
+                        <td>
+                            {{Querie.reason}}
+                        </td>
+                        <td>
+                            {{Querie.past}}
+                        </td>
+                        <td>
+                            {{Querie.diseases}}
+                        </td>
+                        <td>
+                            {{Querie.next_consultation}}
+                        </td>
+                        <td>
+                            {{ getPatientsName(Querie.patients_idpatients) }}
+
+                        </td>
+
+                        <td>
+                            <div class="flex">
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editQuerie(Querie)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+                                    
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteQuerie(Querie)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" style="margin-left: auto;"
+                                    pTooltip="Examenes" tooltipPosition="right" [routerLink]="['/uikit/exams']">
+                                    <i class="pi pi-angle-right" style="margin-left: 0.5rem;"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" style="margin-left: auto;"
+                                    pTooltip="Diagnostico" tooltipPosition="right" [routerLink]="['/uikit/diagnosis']">
+                                    <i class="pi pi-file" style="margin-left: 0.5rem;"></i>
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+            <!--Formulario-->
+
+            <p-dialog [(visible)]="QuerieDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Consulta' : 'Crear Consulta'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="formsqueries">
+
+                        <div class="field">
+                            <label for="consultation_date">Fecha Consulta</label>
+                            <input type="date" pInputText id="consultation_date" formControlName="consultation_date" required autofocus  />
+                            <div
+                            *ngIf="formsqueries.get('consultation_date')?.invalid && formsqueries.get('consultation_date')?.touched">
+                            <small class="p-error"
+                                *ngIf="formsqueries.get('consultation_date')?.hasError('required')">La fecha de la consulta
+                                es obligatorio.</small>
+                        </div>
+                        </div>
+
+
+                        <div class="field">
+                            <label for="reason">Razón</label>
+                            <input type="text" pInputText id="reason" formControlName="reason" required autofocus />
+                            <div *ngIf="formsqueries.get('reason')?.invalid && (formsqueries.get('reason')?.touched || submitted)">
+                                <small class="p-error" *ngIf="formsqueries.get('reason')?.hasError('required')">
+                                    La razón de la consulta es obligatorio.
+                                </small>
+                                <small class="p-error" *ngIf="formsqueries.get('reason')?.hasError('pattern')">
+                                    La razón de la consulta solo puede contener letras.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Antecedentes</label>
+                            <input type="text" pInputText id="name" formControlName="past" required autofocus />
+                             <div
+                                *ngIf="formsqueries.get('past')?.invalid && formsqueries.get('past')?.touched|| submitted">
+                                <small class="p-error" *ngIf="formsqueries.get('past')?.hasError('required')">Los Antecedentes de la consulta es obligatorio.</small>
+                                <small class="p-error" *ngIf="formsqueries.get('past')?.hasError('pattern')">Los Antecedentes de la consulta solo puede contener letras.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="field">
+                            <label for="diseases">Enfermedades</label>
+                            <input type="text" pInputText id="diseases" formControlName="diseases" required autofocus />
+                            <div *ngIf="formsqueries.get('diseases')?.invalid && (formsqueries.get('diseases')?.touched || submitted)">
+                                <small class="p-error" *ngIf="formsqueries.get('diseases')?.hasError('required')">
+                                    La Enfermedad de la consulta es obligatoria.
+                                </small>
+                                <small class="p-error" *ngIf="formsqueries.get('diseases')?.hasError('pattern')">
+                                    La Enfermedad solo puede contener letras.
+                                </small>
+                            </div>
+                        </div>
+          
+                        <div class="field">
+                            <label for="next_consultation">Fecha siguiente consulta</label>
+                            <input type="date" pInputText id="next_consultation" formControlName="next_consultation" required autofocus />
+
+                            <div
+                            *ngIf="formsqueries.get('next_consultation')?.invalid && formsqueries.get('next_consultation')?.touched || submitted">
+                            <small class="p-error"
+                                *ngIf="formsqueries.get('next_consultation')?.hasError('required')">La Fecha siguiente de la consulta es obligatorio.</small>
+                        </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="patient">Paciente</label>
+                            <p-dropdown formControlName="patients_idpatients"  [options]="patients"
+                                optionLabel="name_patients" optionValue="id" appendTo="body"
+                                placeholder="Seleccione Paciente">
+                                
+                                
+                            </p-dropdown>
+                            <small class="p-error" *ngIf="submitted && !formsqueries.get('patients_idpatients')?.value">
+                                Debe seleccionar un paciente.
+                              </small>
+                        </div>
+
+                    </form>
+
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveQuerie()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteQueriesDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteQueriesDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteQuerieDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar las consultas seleccionadas?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteQuerieDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+
+        </div>
+    </div>
+</div>

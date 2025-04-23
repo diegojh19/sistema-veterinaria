@@ -1,0 +1,58 @@
+.field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.field label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.field textarea,
+.field input[type="text"],
+.field input[type="date"] {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+textarea.form-control {
+    resize: vertical; /* Permite ajustar la altura del textarea */
+}
+
+.error-text {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.empty-message-container {
+    display: flex;                  /* Usamos flexbox para la alineación */
+    justify-content: center;        /* Centra horizontalmente */
+    align-items: center;            /* Centra verticalmente */
+    width: 100%;                    /* Asegura que ocupe el 100% del ancho de la tabla */
+    min-height: 50px;               /* Altura mínima para el mensaje */
+    text-align: center;             /* Alinea el texto horizontalmente */
+    margin-top: 20px;               /* Espacio entre la tabla y el mensaje */
+    margin-bottom: 20px;            /* Espacio entre el mensaje y el paginador */
+    box-sizing: border-box;         /* Incluye el padding y los bordes en el tamaño */
+    background-color: #f9f9f9;      /* Fondo para hacerlo más visible */
+    white-space: nowrap;            /* Evita saltos de línea */
+}
+
+/* Asegura que el paginador tenga espacio debajo de la tabla */
+.p-table .p-datatable-footer {
+    margin-top: 20px;               /* Da espacio entre la tabla y el paginador */
+}
+
+/* Si el contenedor de la tabla tiene padding, aseguramos que el mensaje no se desborde */
+.p-table .p-datatable-wrapper {
+    padding-bottom: 20px;           /* Espacio adicional para separar el mensaje */
+}
+
+
+

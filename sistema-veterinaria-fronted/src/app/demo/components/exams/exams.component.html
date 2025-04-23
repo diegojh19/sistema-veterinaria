@@ -1,0 +1,280 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <H2>Examenes</H2>
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="Crear Examen" icon="pi pi-plus" class="p-button-success mr-2"
+                            (click)="openNew()"></button>
+                        <button pButton pRipple label="Eliminar Examen" icon="pi pi-trash" class="p-button-danger"
+                            (click)="deleteSelectedExams()"
+                            [disabled]="!selectedExams || !selectedExams.length"></button>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+
+            <p-table #dt [value]="exams" responsiveLayout="scroll" [rows]="10"
+                [globalFilterFields]="[    'mucous_membrane','fur','oral','reproductive_system','rectal','eyes','lymph_modules','locomotion', 'cardiovascular_system','respiratory_system','digestive_system','urinary_system',]"
+                [paginator]="true" [rowsPerPageOptions]="[10,25,50,100]" [showCurrentPageReport]="true"
+                currentPageReportTemplate="mostrando {first} a {last} de {totalRecords} entradas"
+                [(selection)]="selectedExams" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Examenes</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."
+                                style="width: 400px;" />
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+
+
+                        <th>Mucosa</th>
+                        <th>Piel</th>
+                        <th>Oral</th>
+                        <th>Sistema Reproductor</th>
+                        <th>Rectal</th>
+                        <th>Ojos</th>
+                        <th>Nodulos linfaticos</th>
+                        <th>Locomoción</th>
+                        <th>Sistema Cardiovascular</th>
+                        <th>Sistema Respiratorio</th>
+                        <th>Sistema Digestivo</th>
+                        <th>Sistema Urinario</th>
+                        <th>Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-exams>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="exams"></p-tableCheckbox>
+                        </td>
+
+                        <td>
+                            {{exams.mucous_membrane}}
+                        </td>
+                        <td>
+                            {{exams.fur}}
+                        </td>
+                        <td>
+                            {{exams.oral}}
+                        </td>
+
+                        <td>
+                            {{exams.reproductive_system}}
+                        </td>
+
+                        <td>
+                            {{exams.rectal}}
+                        </td>
+
+                        <td>
+                            {{exams.eyes}}
+                        </td>
+
+                        <td>
+                            {{exams.lymph_modules}}
+                        </td>
+
+                        <td>
+                            {{exams.locomotion}}
+                        </td>
+
+                        <td>
+                            {{exams.cardiovascular_system}}
+                        </td>
+
+                        <td>
+                            {{exams.respiratory_system}}
+                        </td>
+
+                        <td>
+                            {{exams.digestive_system}}
+                        </td>
+
+                        <td>
+                            {{exams.urinary_system}}
+                        </td>
+
+                        <td>
+                            <div class="flex">
+                            
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-info p-button-text" pTooltip="Editar"
+                                    tooltipPosition="right" (click)="editExams(exams)">
+                                    <i class="pi pi-user-edit" style="margin-right: 0.1rem;"></i>
+                                </button>
+
+                                <button pButton pRipple type="button"
+                                    class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                                    tooltipPosition="right" (click)="deleteExams(exams)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <!-- Aquí va el mensaje de 'No se encontraron resultados' -->
+                <ng-template pTemplate="emptymessage">
+                    <div class="empty-message-container">
+                        <span>No se encontraron resultados</span>
+                    </div>
+                </ng-template>
+
+            </p-table>
+
+
+            <!--Formulario-->
+            <p-dialog [(visible)]="ExamsDialog" [style]="{width: '450px'}"
+                [header]="isEditing ? 'Editar Examen' : 'Crear Examen'" [modal]="true" class="p-fluid">
+                <ng-template pTemplate="content">
+                    <form [formGroup]="examsForm">
+
+                    <div class="field">
+                        <label for="mucous_membrane">Mucosa</label>
+                        <input type="text" pInputText id="mucous_membrane" formControlName="mucous_membrane" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['mucous_membrane'].invalid">Mucosa es
+                            requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="fur">Piel</label>
+                        <input type="text" pInputText id="fur" formControlName="fur" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['fur'].invalid">Piel es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="oral">Oral</label>
+                        <input type="text" pInputText id="oral" formControlName="oral" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['oral'].invalid">Oral es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="reproductive_system">Sistema Reproductor</label>
+                        <input type="text" pInputText id="reproductive_system" formControlName="reproductive_system" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['reproductive_system'].invalid">Sistema
+                            Reproductor es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="rectal">Rectal</label>
+                        <input type="text" pInputText id="rectal" formControlName="rectal" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['rectal'].invalid">Rectal es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="eyes">Ojos</label>
+                        <input type="text" pInputText id="eyes" formControlName="eyes" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['eyes'].invalid">Ojos es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="lymph_modules">Nódulos Linfáticos</label>
+                        <input type="text" pInputText id="lymph_modules" formControlName="lymph_modules" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['lymph_modules'].invalid">Nódulos Linfáticos es
+                            requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="locomotion">Locomoción</label>
+                        <input type="text" pInputText id="locomotion" formControlName="locomotion" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['locomotion'].invalid">Locomoción es
+                            requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="cardiovascular_system">Sistema Cardiovascular</label>
+                        <input type="text" pInputText id="cardiovascular_system"
+                            formControlName="cardiovascular_system" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['cardiovascular_system'].invalid">Sistema
+                            Cardiovascular es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="respiratory_system">Sistema Respiratorio</label>
+                        <input type="text" pInputText id="respiratory_system" formControlName="respiratory_system" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['respiratory_system'].invalid">Sistema
+                            Respiratorio es requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="digestive_system">Sistema Digestivo</label>
+                        <input type="text" pInputText id="digestive_system" formControlName="digestive_system" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['digestive_system'].invalid">Sistema Digestivo es
+                            requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="urinary_system">Sistema Urinario</label>
+                        <input type="text" pInputText id="urinary_system" formControlName="urinary_system" />
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['urinary_system'].invalid">Sistema Urinario es
+                            requerido.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="query">Query</label>
+                        <p-dropdown 
+                            formControlName="queries_idqueries"
+                            [options]="Queries" 
+                            optionLabel="reason" 
+                            optionValue="id" 
+                            appendTo="body" 
+                            placeholder="Seleccione una consulta">
+                        </p-dropdown>
+                        <small class="p-error" *ngIf="submitted && examsForm.controls['queries_idqueries'].invalid">
+                            La consulta es requerida.
+                        </small>
+                    </div>
+                    
+                    </form>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                        (click)="saveExams()"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-dialog [(visible)]="deleteExamsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span *ngIf="exam">¿Estás seguro de que quieres eliminar?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                        (click)="deleteExamsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si"
+                        (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+
+            <p-dialog [(visible)]="deleteExamDialog" header="Confirmar Eliminación" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                  <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                  <span>¿Estás seguro de que quieres eliminar los examenes seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                  <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
+                    (click)="deleteExamDialog = false"></button>
+                  <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Sí"
+                    (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+              </p-dialog>
+
+        </div>
+    </div>
+</div>
